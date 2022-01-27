@@ -1,6 +1,4 @@
 /logs/*
-lemp_images/*
-lemp_images/
 .env
 terraform
 terraform/*
