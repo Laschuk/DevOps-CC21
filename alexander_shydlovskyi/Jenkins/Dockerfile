@@ -7,6 +7,8 @@ ENV KUBECONFIG "/home/jenkins/.kube/config"
 
 
 USER root
+
+#INSTALLING DOCKER INSIDE JENKINS CONTAINER
 RUN apt-get update && \ 
 apt-get install ca-certificates curl gnupg lsb-release -y && \
 curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
@@ -15,14 +17,17 @@ $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt-get update && \
 apt-get install docker-ce docker-ce-cli containerd.io -y && \
 
+#INSTALLING DOCKER-COMPOSE
 curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
 chmod +x /usr/local/bin/docker-compose && \
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose && \
 
+#CHANGING UID AND GID FOR JENKINS USER AND DOCKER GROUP
 usermod -u $HOST_UID jenkins && \
 groupmod -g $HOST_GID docker && \
 usermod -aG docker jenkins && \
 
+#INSTALLING KUBECTL AND COPY CONFIG
 curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl && \
 chmod +x /usr/local/bin/kubectl
 COPY config /home/jenkins/.kube/
