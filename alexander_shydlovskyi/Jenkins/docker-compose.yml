@@ -6,7 +6,6 @@ services:
     ports:
       - ${HOST_WWW}:8080
       - ${HOST_OTHER}:50000
-      - 3000:3000
     volumes:
       - ${HOST_JENKINS_DATA}:/var/jenkins_home
       - ${HOST_DOCKER}:/var/run/docker.sock
