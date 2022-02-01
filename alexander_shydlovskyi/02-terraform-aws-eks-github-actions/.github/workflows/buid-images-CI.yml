@@ -6,8 +6,8 @@ name: buid-images-CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    paths:
-      - '*/Dockerfile'
+     branches:
+      - dev
 
 jobs:
 
