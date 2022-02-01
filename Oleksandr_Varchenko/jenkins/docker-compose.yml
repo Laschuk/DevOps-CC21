@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+
+  landing-page:
+    image: docker.localhost:5000/landing-page:CURRENT_DATE
+    ports:
+    - 80:80
