@@ -6,6 +6,7 @@ on:
       - 'dev'
     paths:
       - '*/Dockerfile'
+
 jobs:
 
   build-and-push-images:
@@ -42,4 +43,3 @@ jobs:
             docker push $tag
             printf "${GREEN}* Image $name has pushed successfully${NC}\n"
           done
-          ls -lah
