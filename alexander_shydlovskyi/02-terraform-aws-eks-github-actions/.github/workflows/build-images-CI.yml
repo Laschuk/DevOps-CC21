@@ -4,12 +4,9 @@ on:
   push:
     branches:
       - 'dev'
-    paths:
-      - '*/Dockerfile'
-
 jobs:
 
-  build-and-push-images:
+  build-CI:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout git
