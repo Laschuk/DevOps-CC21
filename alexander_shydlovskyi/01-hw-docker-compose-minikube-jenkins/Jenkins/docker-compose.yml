@@ -1,0 +1,16 @@
+version: '3'
+services:
+  jenkins:
+    image: my-registry.pp.ua:8483/jenkins:v5
+    restart: unless-stopped
+    ports:
+      - ${HOST_WWW}:8080
+      - ${HOST_OTHER}:50000
+    volumes:
+      - ${HOST_JENKINS_DATA}:/var/jenkins_home
+      - ${HOST_DOCKER}:/var/run/docker.sock
+      - ${MINIKUBE_CONF}:/home/jenkins/.minikube
+volumes:
+  jenkins-data:
+
+

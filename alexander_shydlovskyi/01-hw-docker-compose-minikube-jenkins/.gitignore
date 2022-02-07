@@ -1,0 +1,5 @@
+logs/*
+.env
+terraform
+terraform/*
+data/site/wp-config.php
