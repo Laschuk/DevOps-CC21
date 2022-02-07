@@ -1,5 +1,0 @@
-FROM phpmyadmin:5.1.1-apache
-LABEL maintainer="fomindn@gmail.com"
-LABEL version="5.1.1-apache"
-LABEL description="This phpMyAdmin v.5.1.1 docker image is created \
-for the DevOps CI/CD study reason."
