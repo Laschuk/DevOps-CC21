@@ -34,9 +34,9 @@ pipeline {
       steps {
 
           withCredentials([file(credentialsId: 'mykubeconfig', variable: 'KUBECONFIG')]) {
-            sh 'kubectl apply -f maria-secret.yaml'
-            sh 'kubectl apply -f maria-config.yaml'
-            sh 'kubectl apply -f maria.yaml'
+            sh 'kubectl apply -f mongo-secret.yaml'
+            sh 'kubectl apply -f mongo-config.yaml'
+            sh 'kubectl apply -f mongo.yaml'
             sh 'kubectl apply -f webapp.yaml'
         }
       }

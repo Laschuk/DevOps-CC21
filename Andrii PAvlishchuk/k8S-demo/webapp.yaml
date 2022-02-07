@@ -5,7 +5,7 @@ metadata:
   labels:
     app: webapp
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: webapp
@@ -22,19 +22,19 @@ spec:
         env:
         - name: USER_NAME
           valueFrom:
-           secretKeyRef:
-            name: maria-secret
-            key: maria-user
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
         - name: USER_PWD
           valueFrom:
-           secretKeyRef:
-            name: maria-secret
-            key: maria-password
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-password 
         - name: DB_URL
           valueFrom:
             configMapKeyRef:
-              name: maria-config
-              key: maria-url
+              name: mongo-config
+              key: mongo-url
 ---
 apiVersion: v1
 kind: Service
@@ -48,4 +48,4 @@ spec:
     - protocol: TCP
       port: 3000
       targetPort: 3000
-      nodePort: 30001
+      nodePort: 30100
