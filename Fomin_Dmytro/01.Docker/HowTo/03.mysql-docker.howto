@@ -1,0 +1,16 @@
+docker pull mysql:5.7.36
+docker build -f ../Dockerfiles/Dockerfile.mysql -t fomindn/mysql:5.7.36 .
+docker push fomindn/mysql:5.7.36
+docker network create mysql-net
+docker volume create webs-mysql-db
+docker run -tid \
+--rm \
+--name mysql-db \
+-h mysql-db \
+-p 3306:3306 \
+--net mysql-net \
+-v  webs-mysql-db:/var/lib/mysql \
+-e MYSQL_DATABASE=joomla-db \
+--env-file=.env/mysql.env \
+mysql:5.7.36
+docker logs mysql-db

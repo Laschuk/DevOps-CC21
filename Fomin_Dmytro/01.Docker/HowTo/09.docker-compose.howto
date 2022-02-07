@@ -1,0 +1,2 @@
+sudo docker-compose -f joomla-docker-compose.yml up -d
+sudo docker-compose -f joomla-docker-compose.yml stop

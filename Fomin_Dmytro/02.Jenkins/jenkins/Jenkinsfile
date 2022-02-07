@@ -1,0 +1,65 @@
+/*
+    THIS FILE INTENDED FOR JENKINS DOCKER IMAGE BUILD AND PUSHING IT IN DOCKER HUB REGISTRY
+ */
+pipeline {
+    agent any
+
+    environment {
+        DKR_IMG="fomindn/jenkins"
+        DKR_IMG_TAG="v$BUILD_NUMBER"
+        DKR_IMG_NAME="${env.DKR_IMG}:${env.DKR_IMG_TAG}"
+    }
+
+    stages {
+        // Stage #1 - Build docker image with Dockerfile help
+        stage('Build') {
+            environment {
+                JENK=credentials('Jenkins-user')
+            }
+            steps {
+                dir("Fomin_Dmytro/02.Jenkins/jenkins/") {
+                    
+                    // Export latest Jenkins plugins list to plugins.txt file
+                    echo "Export installed latest Jenkins plugins list to plugins.txt file"
+                    sh 'curl -sSL "http://$JENK_USR:$JENK_PSW@localhost:8080/pluginManager/api/xml?depth=1&xpath=/*/*/shortName|/*/*/version&wrapper=plugins" | perl -pe \'s/.*?<shortName>([\\w-]+).*?<version>([^<]+)()(<\\/\\w+>)+/\\1 \\2\\n/g\'|sed \'s/ /:/\' | sort > plugins.txt'
+                
+                    //Building Docker image with Jenkins
+                    sh "docker build -t ${env.DKR_IMG_NAME} ."
+                
+                }
+
+            }
+        }
+        // Stage #2 - Test builded docker image 
+        stage('Test') {
+            steps {
+                echo "Here can be implemented different Docker image tests."
+            }
+        }
+        
+        // Stage #3 - Push docker image to the registry Docker Hub
+        stage('Push'){
+            environment {
+                DHUB=credentials('DockerHub-token')
+            }
+            steps{
+                // Login to Docker Hub
+                sh 'docker login -u $DHUB_USR -p $DHUB_PSW'
+                sh "docker push ${env.DKR_IMG_NAME}"
+            }
+        }
+/*        
+        // Stage #4 - Deploy docker image
+        stage('Deploy') {
+            steps {
+//                sh 'docker-compose up -d'
+            }
+        }
+*/        
+    }
+    post {
+        always {
+            sh 'docker logout'
+        }
+    }
+}

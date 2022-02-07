@@ -1,0 +1,12 @@
+docker pull php:7.4-apache
+docker build -f ../Dockerfiles/Dockerfile.php -t fomindn/php:7.4-apache .
+docker push fomindn/php:7.4-apache
+docker volume create webs-pub-html
+docker run -tid \
+--rm \
+--name php \
+-h php \
+-p 80:80 \
+-v webs-pub-html:/var/www/html \
+php:7.4-apache
+docker logs php

@@ -1,0 +1,13 @@
+docker pull phpmyadmin:5.1.1-apache
+docker build -f ../Dockerfiles/Dockerfile.pma -t fomindn/pma:5.1.1-apache .
+docker push fomindn/pma:5.1.1-apache
+docker run -tid \
+--rm \
+--name pma \
+-h pma \
+-p 8081:80 \
+--net mysql-net \
+--env-file=.env/pma.env \
+-e PMA_HOST=mysql-db \
+phpmyadmin:5.1.1-apache
+docker logs pma

@@ -1,0 +1,30 @@
+sudo apt -f install git
+cd ~
+mkdir .ssh
+cd .ssh
+touch config
+ssh-keygen -t rsa
+echo -e 'Host github.com\nIdentityFile ~/.ssh/github_rsa\n' >> ~/.ssh/config
+cat github_rsa.pub
+cd ~
+ln -s <path-to-workdir-of-project> ~/devops
+git clone git@github.com:fomindn/DevOps-CC21.git
+git checkout -b fomindn
+mkdir Fomin_Dmytro && cd Fomin_Dmytro
+git remote -v
+git remote add my-repo git@github.com:fomindn/DevOps-Crash-course-21.git
+git checkout -b fd_01-docker
+mkdir 01.Docker
+cd ~/devops/DevOps-CC21/
+git status
+git add Fomin_Dmytro/
+cd ~/devops/DevOps-CC21/Fomin_Dmytro/01.Docker
+# Далі йдуть команди створення файлів проекту та їх редагування.
+git add .
+git commit -m "Start of task 1 - Dockers"
+git push my-repo fd_01-docker
+git log
+# Удалить из индекса git-а отслеживаемые папки и файлы
+git rm -r -f --cached "Fomin_Dmytro/02.Jenkins/"
+
+

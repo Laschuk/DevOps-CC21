@@ -1,0 +1,10 @@
+sudo docker pull ngrok/ngrok:latest
+
+sudo docker run --rm -it \
+--name ngrok \
+-h ngrok \
+--net jenkins_jenkins-net \
+-p 4040:4040 \
+--env-file ./ngrok/.ngrok.env \
+ngrok/ngrok:latest \
+http jenkins:8080
