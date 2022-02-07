@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: maria-config
-data:
-  maria-url: maria-service
