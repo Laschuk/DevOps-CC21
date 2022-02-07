@@ -1,0 +1,39 @@
+properties([disableConcurrentBuilds()])
+
+pipeline {
+    agent any
+
+    environment { 
+        CURRENT_DATE = """${sh(
+                returnStdout: true,
+                script: 'date +%Y%m%d%H%M%S'
+            )}""".trim()
+        // CURRENT_DATE = 20220104021032
+    }
+ 
+    stages {
+        stage("Build Image And Push") {
+            steps {
+                sh '''#!/bin/bash
+                    sudo docker pull docker.localhost:5000/landing-page:${CURRENT_DATE} ||
+                    (   cd ./03_jenkins && \
+                        sudo docker build -f ./Dockerfile/Dockerfile -t docker.localhost:5000/landing-page:${CURRENT_DATE} . && \
+                        sudo docker rmi $(sudo docker images -f "dangling=true" -q) && \
+                        sudo docker push docker.localhost:5000/landing-page:${CURRENT_DATE}
+                    )
+                '''
+            }
+        }
+        stage("Deploy") {
+            steps {
+                sh '''#!/bin/bash
+                    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no jenkins@docker.localhost " \
+                        cd ./project && \
+                        wget -O docker-compose.yml https://raw.githubusercontent.com/olexandr-v/crash-course/main/03_jenkins/docker-compose.yml && \
+                        sed -i \"s/CURRENT_DATE/${CURRENT_DATE}/g\" docker-compose.yml && \
+                        docker-compose up -d"
+                '''
+            }
+        }
+    }
+}
