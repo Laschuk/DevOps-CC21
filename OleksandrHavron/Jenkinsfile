@@ -23,11 +23,6 @@ pipeline {
                 sh 'docker push hnom/devopscc_webserver:latest'
             }
         }
-        stage('Deploy') {
-            steps {
-                sh 'docker-compose up -d'
-            }
-        }
     }
     post {
         always {
