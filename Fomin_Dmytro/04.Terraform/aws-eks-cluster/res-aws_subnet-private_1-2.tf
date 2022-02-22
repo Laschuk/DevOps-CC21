@@ -16,23 +16,23 @@
 
 resource "aws_subnet" "private_1" {
   # The VPC ID
-  vpc_id = aws_vpc.main.id
+  vpc_id = aws_vpc.virt_lan.id
 
   # The CIDR block for the subnet
   cidr_block = var.private-subnet-cidr[0]
 
   # The AZ (Availability Zone) for the subnet
-  availability_zone = var.availability-zones[0]
+  availability_zone = data.aws_availability_zones.av_zones.names[0]
 
   # A map of tags to assign to the resource.
   tags = {
-    Name = "private-${var.availability-zones[0]}"
+    Name = "private-${data.aws_availability_zones.av_zones.names[0]}"
     # Tag all public and private subnets that your cluster uses for load balancer resources with 
     # the following key-value pair:
     #   Key: kubernetes.io/cluster/cluster-name
     #   Value: shared
     # The shared value allows more than one cluster to use the subnet.
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/cluster/${local.cluster-name}" = "shared"
     # Allow the ALB (Application Load Balancer) Ingress Controller 
     # to create a load balancer using auto-discovery.
     # Set to 1 or empty tag value for internal load balancers.
@@ -45,19 +45,19 @@ resource "aws_subnet" "private_1" {
 
 resource "aws_subnet" "private_2" {
   # The VPC ID
-  vpc_id = aws_vpc.main.id
+  vpc_id = aws_vpc.virt_lan.id
 
   # The CIDR block for the subnet
   cidr_block = var.private-subnet-cidr[1]
 
   # The AZ (Availability Zone) for the subnet
-  availability_zone = var.availability-zones[1]
+  availability_zone = data.aws_availability_zones.av_zones.names[1]
 
   # A map of tags to assign to the resource.
   tags = {
-    Name                                        = "private-${var.availability-zones[1]}"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb"           = 1
+    Name                                          = "private-${data.aws_availability_zones.av_zones.names[1]}"
+    "kubernetes.io/cluster/${local.cluster-name}" = "shared"
+    "kubernetes.io/role/internal-elb"             = 1
   }
 
 }

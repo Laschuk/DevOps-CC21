@@ -43,25 +43,49 @@ variable "public-subnet-cidr" {
   description = "Public Subnet CIDR"
 }
 
-variable "desired-capacity" {
+variable "private-nodes-desired-capacity" {
   default     = 1
-  type        = string
+  type        = number
   description = "Autoscaling Desired node capacity"
 }
 
-variable "max-size" {
+variable "private-nodes-max-size" {
   default     = 1
-  type        = string
+  type        = number
   description = "Autoscaling maximum node capacity"
 }
 
-variable "min-size" {
+variable "private-nodes-min-size" {
   default     = 1
-  type        = string
+  type        = number
   description = "Autoscaling Minimum node capacity"
 }
 
-variable "node-instance-type" {
+variable "private-nodes-instance-type" {
+  default     = "t2.micro"
+  type        = string
+  description = "Worker Node EC2 instance type"
+}
+
+variable "public-nodes-desired-capacity" {
+  default     = 1
+  type        = number
+  description = "Autoscaling Desired node capacity"
+}
+
+variable "public-nodes-max-size" {
+  default     = 1
+  type        = number
+  description = "Autoscaling maximum node capacity"
+}
+
+variable "public-nodes-min-size" {
+  default     = 1
+  type        = number
+  description = "Autoscaling Minimum node capacity"
+}
+
+variable "public-nodes-instance-type" {
   default     = "t2.micro"
   type        = string
   description = "Worker Node EC2 instance type"

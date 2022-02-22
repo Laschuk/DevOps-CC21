@@ -9,8 +9,25 @@
 #
 # https://www.terraform.io/language/values/outputs
 
+# AWS EKS Cluster ID
+output "cluster_id" {
+  description = "The AWS EKS cluster ID"
+  value       = aws_eks_cluster.cluster.id
+}
+
+output "cluster_name" {
+  description = "Kubernetes Cluster Name"
+  value       = local.cluster-name
+}
+
+output "region" {
+  description = "AWS region"
+  value       = var.aws_region
+}
+
+# AWS VPC ID
 output "vpc_id" {
-  value       = aws_vpc.main.id
+  value       = aws_vpc.virt_lan.id
   description = "VPC ID."
 
   # Setting an output value as sensative prevents 
@@ -18,7 +35,9 @@ output "vpc_id" {
   sensitive = false
 }
 
-output "cluster_id" {
-  description = "The AWS EKS cluster ID"
-  value       = aws_eks_cluster.cluster.id
+# Created role for the Kubernetes service account
+output "eks_cluster_autoscaler_arn" {
+  value = aws_iam_role.eks_cluster_autoscaler.arn
 }
+
+

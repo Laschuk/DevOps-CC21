@@ -5,7 +5,7 @@
 resource "aws_security_group" "worker_nodes_ssh_access" {
   name        = "allow_ssh"
   description = "Allow SSH inbound traffic to the worker nodes of cluster"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.virt_lan.id
 
   ingress {
     from_port = 22

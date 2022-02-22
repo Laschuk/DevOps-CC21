@@ -10,15 +10,15 @@
 # Resource: aws_eks_node_group
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group
 
-resource "aws_eks_node_group" "private-nodes" {
+resource "aws_eks_node_group" "private_nodes" {
   # Name of the EKS Cluster.
   cluster_name = aws_eks_cluster.cluster.name
 
   # Name of the EKS Node Group.
-  node_group_name = "private-nodes"
+  node_group_name = "private_nodes"
 
   # Amazon Resource Name (ARN) of the IAM Role that provides permissions for the EKS Node Group.
-  node_role_arn = aws_iam_role.private-nodes.arn
+  node_role_arn = aws_iam_role.nodes.arn
 
   # Identifiers of EC2 Subnets to associate with the EKS Node Group. 
   # These subnets must have the following resource tag: kubernetes.io/cluster/CLUSTER_NAME 
@@ -31,13 +31,13 @@ resource "aws_eks_node_group" "private-nodes" {
   # Configuration block with scaling settings
   scaling_config {
     # Desired number of worker nodes.
-    desired_size = var.desired-capacity
+    desired_size = var.private-nodes-desired-capacity
 
     # Maximum number of worker nodes.
-    max_size = var.max-size
+    max_size = var.private-nodes-max-size
 
     # Minimum number of worker nodes.
-    min_size = var.min-size
+    min_size = var.private-nodes-min-size
   }
 
   # Type of Amazon Machine Image (AMI) associated with the EKS Node Group.
@@ -45,7 +45,7 @@ resource "aws_eks_node_group" "private-nodes" {
   ami_type = "AL2_x86_64"
 
   # List of instance types associated with the EKS Node Group
-  instance_types = ["${var.node-instance-type}"]
+  instance_types = ["${var.private-nodes-instance-type}"]
 
   # Type of capacity associated with the EKS Node Group. 
   # Valid values: ON_DEMAND, SPOT
@@ -64,7 +64,7 @@ resource "aws_eks_node_group" "private-nodes" {
   }
 
   remote_access {
-    ec2_ssh_key                  = "eks-key"
+    ec2_ssh_key               = "eks-key"
     source_security_group_ids = [aws_security_group.worker_nodes_ssh_access.id]
   }
 
@@ -72,14 +72,42 @@ resource "aws_eks_node_group" "private-nodes" {
     role = "private-nodes"
   }
 
+  # taint {
+  #   key = "team"
+  #   value = "devops"
+  #   effect = "NO_SCHEDULE"
+  # }
+
+  # launch_launch_template {
+  #   name  = aws_launch_template.eks-with-disks.name
+  #   version = aws_launch_template.eks-with-disks.latest-version
+  # }
+
   # Kubernetes version
   version = "1.18"
 
   # Ensure that IAM Role permissions are created before and deleted after EKS Node Group handling.
   # Otherwise, EKS will not be able to properly delete EC2 Instances and Elastic Network Interfaces.
   depends_on = [
-    aws_iam_role_policy_attachment.amazon_eks_worker_private_node_policy,
-    aws_iam_role_policy_attachment.amazon_eks_cni_private_node_policy,
-    aws_iam_role_policy_attachment.amazon_ec2_container_registry_read_only,
+    aws_iam_role_policy_attachment.nodes_AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.nodes_AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.nodes_AmazonEC2ContainerRegistryReadOnly,
   ]
 }
+
+
+# resource "aws_launch_template" "eks-with-disks" {
+#   name = "eks-with-disks"
+#   key_name = "local-provisioner"
+
+#   block_device_mappings {
+#     device_name = "/dev/xvdb"
+#   }
+
+#   ebs {
+#     volume_size = 50
+#     volume_type = "gp2"
+#   }
+# }
+
+

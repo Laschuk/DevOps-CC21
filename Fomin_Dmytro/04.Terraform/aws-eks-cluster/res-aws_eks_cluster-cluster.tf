@@ -9,7 +9,7 @@
 
 resource "aws_eks_cluster" "cluster" {
   # Name of the cluster.
-  name = var.cluster_name
+  name = local.cluster-name
 
   # The ARN (Amazon Resource Name) of the IAM (Identity and Access Management) role that 
   # provides permissions for the Kubernetes control plane to make calls to AWS API operations 
@@ -21,9 +21,11 @@ resource "aws_eks_cluster" "cluster" {
 
   vpc_config {
     # Indicates whether or not the Amazon EKS private API server endpoint is enabled
+    # Default is false
     endpoint_private_access = false
 
     # Indicates whether or not the Amazon EKS public API server endpoint is enabled
+    # Default is true
     endpoint_public_access = true
 
     # Must be in at least two different availability zones

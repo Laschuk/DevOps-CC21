@@ -1,0 +1,69 @@
+# Конфигурация локального профиля AWS CLI с правами доступа ранее созданного 
+# пользователя AWS для доступа к сервисам AWS.
+# https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html
+aws configure --profile default
+# AWS Access Key ID [None]:
+# AWS Secret Access Key [None]:
+# Default region  name [None]: 
+# Default output format [None]: 
+
+# Создание внутреннего хранилища (dedicated bucket) для файла tfstate в AWS S3
+# Имя хранилища должно быть уникальным в пределах AWS S3
+# aws s3 mb s3://<dedicated-bucket-name> --region <region_code>
+aws s3 mb s3://cluster-tfstate-bucket --region eu-central-1
+
+# Активация ведения версий для созданного хранилища
+aws s3api put-bucket-versioning --bucket cluster-tfstate-bucket --versioning-configuration Status=Enabled
+
+# Проверка корректности конфигурационных файлов Terraform
+terraform fmt
+terraform validate
+
+# Инициализация Terraform
+terraform init
+
+# Вывод списка используемых рабочих окружений (workspace) в Terraform:
+terraform workspace list
+
+    # В случае необходимости, можно создать новое рабочее окружение, например dev:
+    terraform workspace new dev
+
+    # А теперь на него можно переключиться:
+    terraform workspace select dev
+
+# Вывод плана вносимых изменений в процессе развертывания кластера на AWS:
+terraform plan
+
+# Запуск развертывания кластера на AWS:
+terraform apply
+
+# Экспорт конфигурации Kubernetes (AWS EKS)
+# /home/fomindn/.kube/config
+aws eks --region $(terraform output -raw region) update-kubeconfig --name $(terraform output -raw cluster_name)
+
+# Проверка созданных инстансов AWS EC2:
+aws ec2 describe-instances --output table
+
+# Проверка подключения к Kubernetes EKS в кластере AWS:
+kubectl get svc
+# Должен появится сервис kubernetes в пространстве имен по умолчанию:
+
+# Вывод пространства имен в кластереAWS EKS:
+kubectl get ns
+
+# Развертывание панели управления Kubernetes Dashboard:
+# ------ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+
+# Подключение к MySQL в AWS RDS:
+# mysql -h $(terraform output -raw rds_hostname) -u $(terraform output -raw rds_username) -p $(terraform output -raw rds_port)  db_name
+
+# Уничтоение всей созданной Terraform инфраструктуры:
+terraform destroy -auto-approve
+
+# Удаление S3 хранилища
+aws s3 rm s3://cluster-tfstate-bucket --recursive
+aws s3api put-bucket-versioning --bucket cluster-tfstate-bucket --versioning-configuration Status=Suspended
+aws s3api delete-objects --bucket terra-state-bucket \
+    --delete "$(aws s3api list-object-versions --bucket cluster-tfstate-bucket | \
+                jq '{Objects: [.Versions[] | {Key:.Key, VersionId : .VersionId}], Quiet: false}')"
+aws s3 rb s3://cluster-tfstate-bucket --force

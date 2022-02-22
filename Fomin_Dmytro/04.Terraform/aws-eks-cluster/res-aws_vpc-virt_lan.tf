@@ -5,7 +5,7 @@
 # Resource: aws_vpc
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc
 
-resource "aws_vpc" "main" {
+resource "aws_vpc" "virt_lan" {
   # The CIDR (Classless Inter-Domain Routing) block for the VPC.
   cidr_block = var.vpc-subnet-cidr
   # Make your instances shared on the host
@@ -25,6 +25,6 @@ resource "aws_vpc" "main" {
 
   # A map of tags to assign to the resource.
   tags = {
-    "Name" = "main"
+    "Name" = "virt_lan"
   }
 }

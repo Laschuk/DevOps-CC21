@@ -12,22 +12,45 @@
 # Resource: aws_routing_table
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table
 
-# A routing table for traffic from private subnets 
-# to the Internet through Internet Gateway
-resource "aws_route_table" "public" {
+# A routing table for traffic from private subnet 
+# to the Internet through NAT gateway
+resource "aws_route_table" "private1" {
   # The VPC ID
-  vpc_id = aws_vpc.main.id
+  vpc_id = aws_vpc.virt_lan.id
 
   route {
-    # The CIDR block of the route. Destination IP of traffic
+    # The CIDR block of the route. 
+    # Destination IP of traffic
     cidr_block = "0.0.0.0/0"
 
-    # Identifier of a VPC internet gateway or a virtual private gateway
-    gateway_id = aws_internet_gateway.main.id
+    # Identifier of a VPC NAT gateway
+    nat_gateway_id = aws_nat_gateway.gw1.id
   }
 
   # A map of tags to assign to the resource.
   tags = {
-    Name = "public"
+    Name = "private1"
+  }
+}
+
+
+# A routing table for traffic from private subnet 
+# to the Internet through NAT gateway
+resource "aws_route_table" "private2" {
+  # The VPC ID
+  vpc_id = aws_vpc.virt_lan.id
+
+  route {
+    # The CIDR block of the route.
+    # Destination IP of traffic
+    cidr_block = "0.0.0.0/0"
+
+    # Identifier of a VPC NAT gateway
+    nat_gateway_id = aws_nat_gateway.gw2.id
+  }
+
+  # A map of tags to assign to the resource.
+  tags = {
+    Name = "private2"
   }
 }
