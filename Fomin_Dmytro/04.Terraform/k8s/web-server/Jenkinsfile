@@ -1,0 +1,52 @@
+/*
+    THIS FILE INTENDED FOR JENKINS DOCKER IMAGE BUILD AND PUSHING IT IN DOCKER HUB REGISTRY
+ */
+pipeline {
+
+  agent any
+
+  stages {
+
+    stage('Checkout Source') {
+      steps{
+        script {
+          checkout scm
+        }
+      }
+    }
+
+    stage('Build images') {
+      steps{
+        script {
+          dockerMysqlImg = docker.build("fomindn/mysql:5.7.36")
+          dockerPmaImg = docker.build("fomindn/pma:5.1.1")
+          dockerJoomlaImg = docker.build("fomindn/joomla:4.0.5")
+        }
+      }
+    }
+
+    stage('Push Image') {
+      steps{
+        script {
+          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
+            dockerMysqlImg.push()
+            dockerPmaImg.push()
+            dockerJoomlaImg.push()
+          }
+        }
+      }
+    }
+
+    stage('Deploy App') {
+      steps {
+
+          withCredentials([file(credentialsId: 'minikube', variable: 'MINIKUBE-CONFIG')]) {
+            sh 'kubectl apply -f ../minikube/local-volume.yaml'
+            sh 'kubectl apply -f mysql.yaml'
+            sh 'kubectl apply -f pma.yaml'
+            sh 'kubectl apply -f joomla.yaml'
+        }
+      }
+    }
+  }
+}

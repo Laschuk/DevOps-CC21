@@ -1,0 +1,111 @@
+# MySQL configmap YAML-file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-configmap
+data:
+  # по данному имени хоста (mysql-service) выполняется подключение к БД MySQL внутри POD-а
+  database_url: mysql-service
+
+---
+
+# MySQL secret YAML-file
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+# Тип секрета
+# https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
+type: Opaque
+data:
+  mysql-root-pass: cGFzcw==
+  mysql-user-name: am9vbWxh
+  mysql-user-pass: am9vbWxh
+  mysql-db-name: am9vbWxhLWRi
+
+---
+
+# MySQL deployment YAML-file
+apiVersion: apps/v1
+# What will be doing? Deployment
+kind: Deployment
+metadata:
+  # The name of deployment
+  name: mysql-deployment
+  namespace: joomla
+  labels:
+    app: mysql
+# Specification for deployment
+spec:
+  # How many REPLICAS of the PODS will be creating
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  ### Blueprint for the POD
+  template:
+    metadata:
+      labels:
+        app: mysql
+    # Specification for a pod
+    spec:
+      hostname: mysql-db
+      containers:
+      - name: mysql-db
+        image: fomindn/mysql:5.7.36
+        ports:
+          - containerPort: 3306
+            name: mysql-port
+        env:
+        - name: MYSQL_DATABASE
+          valueFrom:
+            # Подключаем внешний файл-секрет (mysql-secret.yaml)
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-db-name
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-root-pass
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-user-name
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-user-pass
+        volumeMounts:
+        - name: local-storage
+          mountPath: /var/lib/mysql
+          subPath: mysql
+      volumes:
+      - name: local-storage
+        persistentVolumeClaim:
+          claimName: local-volume-claim
+  ### END Blueprint
+
+---
+
+# MySQL service YAML-file
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  namespace: joomla
+spec:
+  selector:
+    app: mysql
+  type: NodePort
+  ports:
+  - protocol: TCP
+    # порт сервиса в кластере по которому другие сервисы (приложения) 
+      # кластера осуществляют подключение к данному серверу (сервису)
+    port: 3306
+    # Порт контейнера по которому приложение внутри контейнера 
+    # принимает запросы из вне
+    targetPort: 3306
+    nodePort: 30306

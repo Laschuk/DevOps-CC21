@@ -1,0 +1,74 @@
+# ngrok secret YAML-file ngrok-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ngrok-secret
+# Тип секрета
+# https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
+type: Opaque
+data:
+  ngrok-token: MjNRT0lZenZ1bUVEZUNuMXhUMWpCUHZjY0U3X1Z0eE1tWnZuenFtb3M3M2JOR1E2
+
+---
+
+apiVersion: apps/v1
+# What will be doing? Deployment
+kind: Deployment
+metadata:
+  # The name of deployment
+  name: ngrok
+  labels:
+    app: ngrok
+# Specification for deployment
+spec:
+  # How many REPLICAS of the PODS will be creating
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ngrok
+  ### Blueprint for the POD
+  template:
+    metadata:
+      labels:
+        app: ngrok
+    # Specification for a pod
+    spec:
+      hostname: ngrok
+      containers:
+      - name: ngrok
+        image: fomindn/ngrok:lts
+        command: ["ngrok"]
+        args: ["http", "http://192.168.49.2:30500"]
+        ports:
+          - containerPort: 4040
+        env:
+        - name: NGROK_AUTHTOKEN
+          valueFrom:
+            # Подключаем внешний файл-секрет (ngrok-secret.yaml)
+            secretKeyRef:
+              name: ngrok-secret
+              key: ngrok-token
+
+---
+# Блок описания сервиса (service)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ngrok-service
+spec:
+  selector:
+    app: ngrok
+  # тип "балансировщик загрузки" (LoadBalancer) обозначает, что данный 
+  # сервис открывается для публичного доступа по IP адресу и порту (nodePort)
+  type: NodePort
+  ports:
+    - protocol: TCP
+      # порт сервиса в кластере по которому другие сервисы (приложения) 
+      # кластера осуществляют подключение к данному серверу (сервису)
+      port: 4040
+      # Порт контейнера по которому приложение внутри контейнера 
+      # принимает запросы из вне
+      targetPort: 4040
+      # Порт ноды, доступный из вне кластера и через который осуществляется 
+      # подключение к данному сервису (приложению) с локального компьютера
+      nodePort: 30400

@@ -1,0 +1,104 @@
+# Storage Class (SC) YAML-file for Local Storage
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  # Storage Class (SC) Name
+  name: local-storage-class
+provisioner: kubernetes.io/no-provisioner
+# Определяем, как именно будет создаваться Persistent Volume (PV)
+#  - Immediate - PV будет создан сразу же при появлении соотвествующего PVC
+#  - WaitForFirstConsumer - кластер сначала ожидает появления POD-а, который 
+#           запросит этот PV, и затем, в зависимости от AvailbiltyZone рабочей 
+#           NOD-ы, на которой был запущен POD, создёт PV
+volumeBindingMode: WaitForFirstConsumer
+
+---
+
+# Persistent Volume (PV) YAML-file for Local Storage
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-local-node
+spec:
+  # Storage Class (SC) Name
+  storageClassName: local-storage-class
+  capacity:
+  # Размер тома - 500Мб
+    storage: 500Mi
+  # Режим тома:
+  #   - Filesystem - том монтируется в POD-ы в каталог
+  #   - Block      - том как блочное устройство без файловой системы
+  volumeMode: Filesystem
+  # Режим доступа к хранилищу:
+  #  - ReadWriteOnce - том может быть смонтирован для чтения и записи одним узлом
+  #  - ReadOnlyMany  - том может быть смонтирован только для чтения многими узлами
+  #  - ReadWriteMany - том может быть смонтирован на чтение-запись многими узлами
+  accessModes:
+    - ReadWriteOnce
+  # Политика восстановления PV сообщает кластеру, что делать с томом после освобождения:
+  #   - Retain  - позволяет вручную высвобождать ресурс. Когда PVC удаляется, PV все 
+  #               еще существует, и том считается "освобожденным", но пока недоступен 
+  #               для другого PVC. Для повторного использования тома, создать новый PV
+  #               с тем же определением ресурса хранения.
+  #   - Recycle - устарела. Рекомендуется использовать динамическую подготовку (dynamic provisioning).
+  #   - Delete  - удаляет как PV, так и ресурс хранения во внешнем окружении (AWS EBS, 
+  #               GCE PD, Azure диск, или том Cinder). Тома подготовленные динамически, 
+  #               наследуют политику восстановления своего Storage Class (SC) - по умолчанию Delete
+  persistentVolumeReclaimPolicy: Retain
+  # Путь к директории хранилища на локальном хосте
+  local:
+    # ВАЖНО!!! Версия локальная версия Kubernetes (k8s) - minikube создает сначала одноименную
+    # виртуальную машину (docker контейнер) и лишь затем создает в ней контейнеры. Поэтому path
+    # ссылается на путь ВНУТРИ ДАННОЙ ВИРТУАЛЬНОЙ МАШИНЫ (docker контейнер), а НЕ ЛОКАЛЬНОГО КОМПЬЮТЕРА!
+    # Что бы примонтировать определенную директорию локального ХОСТА к созданной minikube одноименной 
+    # ВИРТУАЛЬНОЙ МАШИНЕ, необходимо выполнить комманды:
+    #
+    # minikube start
+    # minikube mount <source_directory_on_local_HOST>:<target_directory_on_Virtual_Machine>
+    #
+    # После выполнения комманд, монтирование существует до тех пор, пока не будет завершен процесс 
+    # запущенный в терминале поселедней коммандой.
+    # source_directory: /home/fomindn/devops/DevOps-CC21/Fomin_Dmytro/03.Kubernetes/local_cluster/volume
+    # target_directory: /mnt/volume
+    path: "/mnt/volume"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        # это метка (ключ), по которой мы будем искать NOD-ы для размещения POD-ов
+        - key: kubernetes.io/hostname
+          # Логический оператор, по которому будет производится выбор метки:
+          #   - In            - подойдет любое из перечисленных значений
+          #   - NotIn         - противоположно In
+          #   - Exists        - метка просто есть (values игнорируется)
+          #   - DoesNotExists - противоположно Exists
+          #   - Gt            - Greater than, значение метки больше указанного
+          #                     в политике числа. Сработает только для чисел
+          #   - Lt            - Less than, противоположно Gt
+          operator: In
+          values:
+          # это значения метки, которые нам подойдут. Имя NOD-ы.
+          - minikube
+
+---
+
+# Persistent Volume Claim (PVC) YAML-file for Local Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  # Persistent Volume Claim (PVC) Name
+  name: local-volume-claim
+spec:
+  # Storage Class (SC) Name
+  storageClassName: "local-storage-class"
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+
+# Применять конфигурацию для Local Storage в строго определенном порядке:
+#   - Storage Class (SC) YAML-file
+#   - Persistent Volume (PV) YAML-file
+#   - Persistent Volume Claim (PVC) YAML-file
+#   - POD YAML-file (mysql.yaml)

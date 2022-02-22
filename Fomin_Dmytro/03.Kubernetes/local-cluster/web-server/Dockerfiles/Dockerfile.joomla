@@ -1,0 +1,5 @@
+FROM joomla:4.0.5-apache
+LABEL maintainer="fomindn@gmail.com"
+LABEL version="4.0.5-apache"
+LABEL description="This CMS Joomla v.4.0.5 docker image is created \
+for the DevOps CI/CD study reason."

@@ -1,0 +1,48 @@
+/*
+    THIS FILE INTENDED FOR JENKINS DOCKER IMAGE BUILD AND PUSHING IT IN DOCKER HUB REGISTRY
+ */
+pipeline {
+
+  agent any
+
+  stages {
+
+    stage('Checkout Source') {
+      steps{
+        script {
+          checkout scm
+        }
+      }
+    }
+
+    stage('Build images') {
+      steps{
+        script {
+          dockerJenkinsImg = docker.build("fomindn/jenkins:lts")
+          dockerNgrokImg = docker.build("fomindn/ngrok:lts")
+        }
+      }
+    }
+
+    stage('Push Image') {
+      steps{
+        script {
+          docker.withRegistry('https://registry.hub.docker.com', 'docker-hub') {
+            dockerJenkinsImg.push()
+            dockerNgrokImg.push()
+          }
+        }
+      }
+    }
+
+    stage('Deploy App') {
+      steps {
+
+          withCredentials([file(credentialsId: 'minikube', variable: 'MINIKUBE-CONFIG')]) {
+            sh 'kubectl apply -f jenkins.yaml'
+            sh 'kubectl apply -f ngrok.yaml'
+        }
+      }
+    }
+  }
+}

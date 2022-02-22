@@ -12,6 +12,32 @@
 
 # Jenkins CLI file
 /Fomin_Dmytro/02.Jenkins/jenkins/jenkins-cli.jar
+/Fomin_Dmytro/03.Kubernetes/local-cluster/jenkins/jenkins-cli.jar
 
 # minikube Debian packet
 # minikube_latest_amd64.deb
+
+# Ignore files in "04.Terraform" directory of project
+
+# temporary *-output files
+/Fomin_Dmytro/04.Terraform/aws-eks-cluster/*-output
+
+# Local .terraform directories
+**/.terraform/*
+
+# .terraform.lock.hcl files
+*.lock.hcl
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

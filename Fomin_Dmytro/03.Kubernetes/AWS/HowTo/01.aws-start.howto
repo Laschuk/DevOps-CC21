@@ -1,0 +1,91 @@
+# Настройка и разворачивание инфраструктуры AWS.
+
+# Должен быть создан профиль пользователя с ROOT правами на портале AWS, защищенный с помощью
+# MFA (Multi-factor Authentication) аутентификации типа "Virtual MFA device", а на мобильном
+# телефоне установлено приложение для генерации кодов аутентификации, например Google Authenticator.
+# Также должен бысть создан IAM (Identity and Access Management) пользователь из группы "Administrators"
+# с подключенной политикой безопасности "AdministratorAccess". В дальнейшем все операции с AWS проводятся
+# только с помощью данного пользователя для обеспечения безопасности.
+# https://aws.amazon.com/getting-started/guides/setup-environment/module-two/
+
+# Установка AWS CLI с помощью которого будет управляться инфраструктура AWS
+cd ~ && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip && rm awscliv2.zip
+sudo ./aws/install
+cd -
+
+# Конфигурация AWS CLI Credentials, используя данные ключей полученные при создании IAM пользователя.
+# https://aws.amazon.com/getting-started/guides/setup-environment/module-three/
+aws configure
+    AWS Access Key ID [None]: ANOTREALACCESSKEYID
+    AWS Secret Access Key [None]: ANOTREALSECRETACCESSKEY
+    Default region name [None]: eu-central-1
+    Default output format [None]: yaml
+# Данная комманда создает директорию ~/.aws/ и два файла конфигурации config и credentials
+
+
+# Создание среды разработки Cloud9 IDE
+# AWS Cloud9 — это бесплатная облачная интегрированная среда разработки (IDE), которая позволяет писать, 
+# запускать и отлаживать код с помощью всего лишь браузера.
+# Настрока среды Cloud9:
+aws cloud9 create-environment-ec2 --name test-env --description "Its a first test environment on AWS Cloud9." \
+    --instance-type t2.micro --automatic-stop-time-minutes 60
+# В данном примере будет использоваться экземпляр (instance) виртуальной машины типа t2.micro, который автоматически
+# прекратит работу через 60 минут для экономии средств.
+# Выполнение комманды вернет хеш-код environmentId подставив который в URL:
+#       https://console.aws.amazon.com/cloud9/ide/<environmentID>?region=eu-central-1
+# получим доступ к среде разработки Clou9 IDE.
+# Например: 
+#       https://console.aws.amazon.com/cloud9/ide/8a34f51ce1e04a08882f1e811bd706EX?region=us-west-2
+# Будет предложено войти в свою учетную запись AWS, если вы еще не вошли в нее. Входить в систему необходимо с учетной
+# записью пользователя IAM без полномочий root.
+# Среду разработки Cloud9 можно удалить выполнив команду:
+#       aws cloud9 delete-environment --environment-id <environmentID>
+
+# Установка и настройка AWS CDK (Cloud Development Kit) - среды разработки программного обеспечения с открытым 
+# исходным кодом, которая позволяет определять ресурсы облачных приложений с помощью языков программирования, 
+# таких как JavaScript, TypeScript, Python, Java, C# и Go.
+# Установка NodeJS
+cd ~ && curl "https://nodejs.org/dist/v16.14.0/node-v16.14.0-linux-x64.tar.xz" && cd -
+export VERSION=v16.14.0
+export DISTRO=linux-x64
+sudo mkdir -p /usr/local/lib/nodejs
+sudo tar -xJvf ~/node-$VERSION-$DISTRO.tar.xz -C /usr/local/lib/nodejs
+rm ~/node-$VERSION-$DISTRO.tar.xz
+cat <<EOF >> ~/.profile
+
+# NodeJS
+VERSION=v16.14.0
+DISTRO=linux-x64
+export PATH=/usr/local/lib/nodejs/node-$VERSION-$DISTRO/bin:$PATH
+
+EOF
+source ~/.profile
+# Проверка установки пакетов NodeJS
+node -v
+npm version
+npx -v
+# Установка AWS CDK CLI
+sudo npm install -g aws-cdk
+cdk --version
+
+# Начальная загрузка вашей учетной записи AWS
+# Многие стеки AWS CDK, которые вы будете развертывать, будут включать активы, внешние файлы, развертываемые вместе со 
+# стеком, например функции AWS Lambda или образы Docker. AWS CDK загружает их в корзину Amazon S3 bucket или другие 
+# контейнеры, чтобы они были доступны для AWS CloudFormation во время развертывания. Создание этих контейнеров 
+# называется начальной загрузкой (bootstrapping). Для загрузки своего аккаунт AWS (и заданного региона), выполняеем:
+aws sts get-caller-identity
+# Вывод:
+    Account: '719620681895'
+    Arn: arn:aws:iam::719620681895:user/devops
+    UserId: AIDA2PDF4GCT34M6UGBIZ
+# Загрузка учетной записи
+cdk bootstrap aws://719620681895/eu-central-1
+# Вывод:
+    Bootstrapping environment aws://719620681895/eu-central-1...
+    Trusted accounts for deployment: (none)
+    Trusted accounts for lookup: (none)
+    Using default execution policy of 'arn:aws:iam::aws:policy/AdministratorAccess'. Pass '--cloudformation-execution-policies' to customize.
+    CDKToolkit: creating CloudFormation changeset...
+    Environment aws://719620681895/eu-central-1 bootstrapped.
+

@@ -1,0 +1,41 @@
+# Имя YAML файла должно содержать зарезервированное слово типа KIND (Deployment или Service).
+# Например:
+#       <имя-развертывания>-deployment.yaml
+#       <имя-сервиса>-service.yaml
+# Конфигурационный файл состоит из трех частей:
+#   1. Metadata (метаданные)
+#   2. Specification (спецификация)
+#   3. Status (состояние) - Автоматически генерируется и добавляется Kubernetes. 
+#      Данные Status сберигаются в etcd (Key-Value Store).
+
+apiVersion: apps/v1
+# Определяем что хотим создать Deployment (развертывание)
+# или Service (сервис)
+kind: Deployment
+
+##### Блок метаданных #####
+metadata:
+    name: nginx-deplyment
+    labels:
+###########################
+
+# Блок спецификаций специфичен и зависит от типа KIND (Deployment или Service).
+#===== Блок спецификации =====#    
+spec:
+    replicas: 2
+    selector:
+    template:
+#=============================#
+    # Блок спецификации POD-а
+    #----- Блок шаблона конфигурации PODa -----#
+        metadata:
+            labels:
+                app: nginx
+        spec:
+            containers:
+            - name: nginx
+                image: nginx:1.16
+                ports:
+                - containerPort: 8080
+    #------------------------------------------#
+

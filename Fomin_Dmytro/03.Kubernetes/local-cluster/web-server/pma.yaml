@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+# What will be doing? Deployment
+kind: Deployment
+metadata:
+  # The name of deployment
+  name: phpmyadmin
+  labels:
+    app: pma
+# Specification for deployment
+spec:
+  # How many REPLICAS of the PODS will be creating
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pma
+  ### Blueprint for the POD
+  template:
+    metadata:
+      labels:
+        app: pma
+    # Specification for a pod
+    spec:
+      hostname: pma
+      containers:
+      - name: pma
+        image: fomindn/pma:5.1.1
+        ports:
+          - containerPort: 80
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            # Подключаем внешний файл-секрет (mysql-secret.yaml)
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-root-pass
+        - name: PMA_HOST
+          valueFrom:
+            # Подключаем внешний файл карту настроек (mysql-configmap.yaml)
+            configMapKeyRef:
+              name: mysql-configmap
+              key: database_url
+---
+# Блок описания сервиса (service)
+apiVersion: v1
+kind: Service
+metadata:
+  name: pma-service
+spec:
+  selector:
+    app: pma
+  # тип "балансировщик загрузки" (LoadBalancer) обозначает, что данный 
+  # сервис открывается для публичного доступа по IP адресу и порту (nodePort)
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      # порт сервиса в кластере по которому другие сервисы (приложения) 
+      # кластера осуществляют подключение к данному серверу (сервису)
+      port: 85
+      # Порт контейнера по которому приложение внутри контейнера 
+      # принимает запросы из вне
+      targetPort: 80
+      # Порт ноды, доступный из вне кластера и через который осуществляется 
+      # подключение к данному сервису (приложению) с локального компьютера
+      nodePort: 30100

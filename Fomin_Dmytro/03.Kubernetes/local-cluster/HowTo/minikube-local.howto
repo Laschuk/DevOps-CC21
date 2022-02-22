@@ -1,0 +1,418 @@
+# Ubuntu 20.04 LTS
+
+# Установка драйвера KVM2 - Linux KVM (Kernel-based Virtual Machine) driver
+# https://minikube.sigs.k8s.io/docs/drivers/kvm2/
+
+# Для установки утилиты kvm-ok (проверка возможности виртуализации) необходимо установить:
+sudo apt -f install cpu-checker
+
+# Проверяем или есть возможность виртуализации:
+kvm-ok
+# Вывод комманды:
+# INFO: /dev/kvm exists
+# KVM acceleration can be used
+
+# Инсталлируем необходимые пакеты для установки KVM 
+sudo apt -f install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-viewer
+
+# Добавляем пользователя в группы libvirt и kvm
+sudo adduser `id -un` libvirt
+sudo adduser `id -un` kvm
+
+# Проверяем корректность установки KVM
+virsh list --all
+# Вывод:
+#  Id   Name   State
+# --------------------
+
+# Проверяем правильность установленных прав на сокет-файл
+sudo ls -la /var/run/libvirt/libvirt-sock
+# Вывод:
+# srw-rw---- 1 root libvirt 0 янв 22 16:10 /var/run/libvirt/libvirt-sock
+
+# Проверяем, что libvirt настроен правильно и не содержит ошибок:
+virt-host-validate
+# Вывод:
+#  QEMU: Checking for hardware virtualization                                 : PASS
+#  QEMU: Checking if device /dev/kvm exists                                   : PASS
+#  QEMU: Checking if device /dev/kvm is accessible                            : PASS
+#  QEMU: Checking if device /dev/vhost-net exists                             : PASS
+#  QEMU: Checking if device /dev/net/tun exists                               : PASS
+#  QEMU: Checking for cgroup 'cpu' controller support                         : PASS
+#  QEMU: Checking for cgroup 'cpuacct' controller support                     : PASS
+#  QEMU: Checking for cgroup 'cpuset' controller support                      : PASS
+#  QEMU: Checking for cgroup 'memory' controller support                      : PASS
+#  QEMU: Checking for cgroup 'devices' controller support                     : PASS
+#  QEMU: Checking for cgroup 'blkio' controller support                       : PASS
+#  QEMU: Checking for device assignment IOMMU support                         : WARN (No ACPI DMAR table found, IOMMU either disabled in BIOS or not supported by this hardware platform)
+#  QEMU: Checking for secure guest support                                    : WARN (Unknown if this platform has Secure Guest support)
+#   LXC: Checking for Linux >= 2.6.26                                         : PASS
+#   LXC: Checking for namespace ipc                                           : PASS
+#   LXC: Checking for namespace mnt                                           : PASS
+#   LXC: Checking for namespace pid                                           : PASS
+#   LXC: Checking for namespace uts                                           : PASS
+#   LXC: Checking for namespace net                                           : PASS
+#   LXC: Checking for namespace user                                          : PASS
+#   LXC: Checking for cgroup 'cpu' controller support                         : PASS
+#   LXC: Checking for cgroup 'cpuacct' controller support                     : PASS
+#   LXC: Checking for cgroup 'cpuset' controller support                      : PASS
+#   LXC: Checking for cgroup 'memory' controller support                      : PASS
+#   LXC: Checking for cgroup 'devices' controller support                     : PASS
+#   LXC: Checking for cgroup 'freezer' controller support                     : PASS
+#   LXC: Checking for cgroup 'blkio' controller support                       : PASS
+#   LXC: Checking if device /sys/fs/fuse/connections exists                   : PASS
+
+# Инсталируем minikube
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
+sudo dpkg -i minikube_latest_amd64.deb
+
+# Инсталируем minikube
+minikube start
+
+        # Устанавливаем kubectl
+        # minikube kubectl -- get pods -A
+
+        # Делаем алиас на комманду kubectl
+        # alias kubectl="minikube kubectl --"
+
+# Добавляем токен-ключ для пакета apt в Ubuntu
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+# Добавляем новый репозиторий в список репозиториев Ubuntu
+echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kurbenetes.list
+# Инсталируем утилиты Kubernetes
+sudo apt -f install kubectl kubeadm kubelet
+
+# Добавление автодополнения autocomplete постоянно в командную оболочку bash
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+source ~/.bashrc
+
+# Для получения дополнительной информации о состоянии вашего кластера minikube включает панель мониторинга Kubernetes
+minikube dashboard
+
+# Создаем master кластер с использованием драйвера Docker
+minikube start --driver=docker
+
+# Выполняем комманду вывода списка доступных нод в кластере
+kubectl get nodes
+# Вывод:
+# NAME       STATUS   ROLES                  AGE   VERSION
+# minikube   Ready    control-plane,master   42m   v1.23.1
+
+# Комманда вывода текущего статуса кластера
+minikube status
+# Вывод:
+# minikube
+# type: Control Plane
+# host: Running
+# kubelet: Running
+# apiserver: Running
+# kubeconfig: Configured
+
+# Информация о версии серверной и клиентской части Kubernetes
+kubectl version
+# Вывод:
+# Client Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.1", GitCommit:"86ec240af8cbd1b60bcc4c03c20da9b98005b92e", 
+# GitTreeState:"clean", BuildDate:"2021-12-16T11:41:01Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+# Server Version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.1", GitCommit:"86ec240af8cbd1b60bcc4c03c20da9b98005b92e", 
+# GitTreeState:"clean", BuildDate:"2021-12-16T11:34:54Z", GoVersion:"go1.17.5", Compiler:"gc", Platform:"linux/amd64"}
+
+# kubectl CLI - for configuring the minikube cluster
+# minikube CLI - for start up/deleting the cluster
+
+# Вывести все поды
+kubectl get pod
+# Вывод:
+# No resources found in default namespace.
+
+# Вывод всех POD-ов, запущенных в кластере во всех пространствах имен:
+kubectl get pods --all-namespaces
+# Вывод:
+NAMESPACE              NAME                                        READY   STATUS    RESTARTS      AGE
+kube-system            coredns-64897985d-znpnq                     1/1     Running   0             37m
+kube-system            etcd-minikube                               1/1     Running   0             37m
+kube-system            kube-apiserver-minikube                     1/1     Running   0             37m
+kube-system            kube-controller-manager-minikube            1/1     Running   0             37m
+kube-system            kube-proxy-gnkll                            1/1     Running   0             37m
+kube-system            kube-scheduler-minikube                     1/1     Running   0             37m
+kube-system            storage-provisioner                         1/1     Running   1 (36m ago)   37m
+kubernetes-dashboard   dashboard-metrics-scraper-58549894f-2j4dm   1/1     Running   0             35m
+kubernetes-dashboard   kubernetes-dashboard-ccd587f44-xptm6        1/1     Running   0             35m
+
+# Вывести все сервисы в пространстве имён:
+kubectl get services
+# Вывод:
+# NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+# kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   56m
+
+# Вывести список всех достуных расширений minikube
+minikube addons list
+# Вывод:
+        |-----------------------------|----------|--------------|--------------------------------|
+        |         ADDON NAME          | PROFILE  |    STATUS    |           MAINTAINER           |
+        |-----------------------------|----------|--------------|--------------------------------|
+        | ambassador                  | minikube | disabled     | third-party (ambassador)       |
+        | auto-pause                  | minikube | disabled     | google                         |
+        | csi-hostpath-driver         | minikube | disabled     | kubernetes                     |
+        | dashboard                   | minikube | enabled      | kubernetes                     |
+        | default-storageclass        | minikube | enabled      | kubernetes                     |
+        | efk                         | minikube | disabled     | third-party (elastic)          |
+        | freshpod                    | minikube | disabled     | google                         |
+        | gcp-auth                    | minikube | disabled     | google                         |
+        | gvisor                      | minikube | disabled     | google                         |
+        | helm-tiller                 | minikube | disabled     | third-party (helm)             |
+        | ingress                     | minikube | enabled      | unknown (third-party)          |
+        | ingress-dns                 | minikube | disabled     | google                         |
+        | istio                       | minikube | disabled     | third-party (istio)            |
+        | istio-provisioner           | minikube | disabled     | third-party (istio)            |
+        | kubevirt                    | minikube | disabled     | third-party (kubevirt)         |
+        | logviewer                   | minikube | disabled     | unknown (third-party)          |
+        | metallb                     | minikube | disabled     | third-party (metallb)          |
+        | metrics-server              | minikube | disabled     | kubernetes                     |
+        | nvidia-driver-installer     | minikube | disabled     | google                         |
+        | nvidia-gpu-device-plugin    | minikube | disabled     | third-party (nvidia)           |
+        | olm                         | minikube | disabled     | third-party (operator          |
+        |                             |          |              | framework)                     |
+        | pod-security-policy         | minikube | disabled     | unknown (third-party)          |
+        | portainer                   | minikube | disabled     | portainer.io                   |
+        | registry                    | minikube | disabled     | google                         |
+        | registry-aliases            | minikube | disabled     | unknown (third-party)          |
+        | registry-creds              | minikube | disabled     | third-party (upmc enterprises) |
+        | storage-provisioner         | minikube | enabled      | google                         |
+        | storage-provisioner-gluster | minikube | disabled     | unknown (third-party)          |
+        | volumesnapshots             | minikube | disabled     | kubernetes                     |
+        |-----------------------------|----------|--------------|--------------------------------|
+
+# Активировать панель управления Kubernetes и получите URL-адрес панели:
+minikube dashboard --url
+
+# Запустить один экземпляр образа из docker-образа с Docker-Hub
+kubectl create deployment k8s-nginx --image=nginx
+# Вывод:
+# deployment.apps/k8s-nginx created
+
+# Список всех развертываний:
+kubectl get deployment
+# Вывод:
+# NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+# k8s-nginx      1/1     1            1       60s
+
+# Вывести все поды
+kubectl get pod
+# Вывод:
+# NAME                        READY   STATUS             RESTARTS      AGE
+# k8s-nginx-6d779d947c-rnc84     1/1     Running            0          100s
+
+# Вывести лог пода в stdout
+kubectl logs k8s-nginx-6d779d947c-rnc84
+
+# Удаление экземпляров образа
+kubectl delete deployment k8s-mysql-db
+kubectl delete deployment mysql-db
+
+# Слои абстракции конфигурационного файла:
+# Deployment => RepliaSet => Pod => Container
+# 
+# kubectl commands:
+#   kubectl [create | edit | delete] depoloyment [NAME]  - создать/обновить/удалить развертывание с именем NAME
+#   kubectl get [nodes | pod | services | replicaset | deployment]  - вывести доступные ноды/поды/сервисы/инстансы/развертывания
+#   kubectl logs [pod_NAME] - подключиться к STDOUT логов пода с именем pod_NAME
+#   kubectl exec -ti [pod_NAME] -- bin/bash - подключиться к терминальной сессии пода с именем pod_NAME
+#   kubectl describe pod [pod_NAME] - вывести информацию о поде с именем pod_NAME
+#   kubectl [apply | delete] -f [filename] - создать/удалить развертывание по инструкции конфигурационного файла filename.YAML
+
+# Выполнение комманды внутри контейнера
+kubectl exec -it k8s-nginx-6d779d947c-rnc84 -- bin/bash
+
+# Применение развертывания (deployment) и запуска сервиса с использованием конфигурационного файла YAML.
+kubectl apply -f /path/to/yaml/file.yml
+
+# Кодирование секретных данных ключем Base64 для secret-файла
+echo -n 'rootpassword' | base64
+cm9vdHBhc3N3b3Jk
+
+# Создание хранилища secret для файла mysql-secret.yaml
+kubectl apply -f mysql-secret.yaml
+secret/mysql-secret created
+
+# Убеждаемся что secret хранилище созданно
+kubectl get secret
+
+# создаем развертывание (deployment) для mysql
+kubectl apply -f mysql.yaml
+deployment.apps/mysql-deployment created
+# создаем сервис (service) для mysql с того же файла, что и для развертывания (deployment),
+# поскольку в нем указан также блок описания сервиса
+kubectl apply -f mysql.yaml
+deployment.apps/mysql-deployment unchanged
+service/mysql-service created
+
+# Создание конфигурационной карты (ConfigMap) на основе файла mysql-configmap.yaml
+kubectl apply -f mysql-configmap.yaml
+configmap/mysql-configmap created
+
+# Создание развертывания phpMyAdmin на основе файла конфигурации (блок deployment)
+kubectl apply -f pma.yaml
+deployment.apps/phpmyadmin created
+
+# Создание сервиса (service) phpMyAdmin на основе файла конфигурации (блок service)
+kubectl apply -f pma.yaml
+deployment.apps/phpmyadmin unchanged
+service/pma-service created
+
+# Запустить сервис и открыть в браузере страницу с phpMyAdmin
+minikube service pma-service
+|-----------|-------------|-------------|---------------------------|
+| NAMESPACE |    NAME     | TARGET PORT |            URL            |
+|-----------|-------------|-------------|---------------------------|
+| default   | pma-service |          80 | http://192.168.49.2:30080 |
+|-----------|-------------|-------------|---------------------------|
+
+# Создание развертывания и сервиса Joomla на основе файла конфигурации (joomla.yaml)
+kubectl apply -f joomla.yaml
+deployment.apps/joomla created
+service/joomla-service created
+
+# Запустить сервис и открыть в браузере страницу с Joomla
+minikube service joomla-service
+|-----------|----------------|-------------|---------------------------|
+| NAMESPACE |      NAME      | TARGET PORT |            URL            |
+|-----------|----------------|-------------|---------------------------|
+| default   | joomla-service |        8080 | http://192.168.49.2:30000 |
+|-----------|----------------|-------------|---------------------------|
+
+# Кластер Kubernetes (k8s) состоит из следующих стандартных "пространств имен" (Namespace):
+#   - default               - все ресурсы создаваемые в кластере хранятся здесь, 
+#                             если изначально не были созданны свои пространства имен.
+#   - kube-node-lease       - расширение k8s, которое содержит данные о состоянии 
+#                              и доступности узлов (nodes). Каждая нода имеет свой
+#                             ассоциированный выделенный объект в пространстве имен.
+#   - kube-public           - содержит общедоступные данные (accesible data), 
+#                             конфигурационную карту (configmap), которая содержит 
+#                             информацию о кластере без аутентификации
+#                             kubectl cluster-info
+#   - kube-system           - системные процессы, процессы Мастер-ноды и kubectl
+#   - kubernetes-dashboard  - автоматически предоставляется ТОЛЬКО в minikube
+#  ┌──────────────────────────────Kubernetes Cluster─────────────────────────────┐
+#  │                                                                             │
+#  │  ┌──kube-system──┐ ┌──kube-public──┐ ┌─kube-node-lease─┐ ┌────default────┐  │
+#  │  │               │ │               │ │                 │ │               │  │
+#  │  │               │ │               │ │                 │ │               │  │
+#  │  │               │ │               │ │                 │ │               │  │
+#  │  └───────────────┘ └───────────────┘ └─────────────────┘ └───────────────┘  │
+#  └─────────────────────────────────────────────────────────────────────────────┘
+#
+#   Namespace - можно представить как виртуальный кластер внутри кластера Kubernetes.
+#   Пространство имен можно указать в файле конфигурации yaml для POD-а:
+#    kind: Pod
+#    metadata:
+#    name: mypod
+#    namespace: test
+#    labels:
+#        name: mypod
+#   либо создать отдельный файл конфигурации пространства имен с типом kind: Namespace
+#   Можно создать собственные пространства имен с помощью комманды:
+#   kubectl create namespace <namespace-name>
+
+# Компонента k8s - "Вход" (Ingres) служит для обеспечения доступа к приложению в 
+# кластере k8s по доменному имени и протоколу https (продакшин вариант) вместо IP
+# адреса и номера порта по протоколу http для быстрого запуска, тестирования и отладки.
+# Для Входа (Ingres) можна создать также отдельный конфигурационный файл с типом kind: Ingres.
+#        kind: Ingress
+#        metadata:
+#            name: myapp-ingress
+#        spec:
+#            rules:
+#            # URL-хоста по которому происходит обращение из браузера к приоложению
+#            - host: myapp.com
+#            # протокол входящего запроса к внутренней службе (myapp-internal-service)
+#            http:
+#                # Часть URL-адреса после имени хоста (http://myapp.com/) - PATH, может
+#                # быть определена в данном блоке
+#                paths:
+#                - backend:
+#                    # Все запросы к хосту myapp.com должны быть перенаправленны в данную
+#                    # внутреннюю службу
+#                    serviceName: myapp-internal-service
+#                    servicePort: 8080
+#   Для обработки правил маршрутизации входящих запросов необходимо внедрить "Входящий контроллер"
+#   (Ingress Controller), который представляет собой один или несколько POD-ов внутри k8s кластера.
+#   Схема обработки входящего запроса (от точки входа до MyApp POD):
+#
+#   MyApp POD <= MyApp Service <= MyApp Ingress <= Ingress Controller POD (точка входа)
+#
+# Установка дополнения minikube - "входящего контроллера" (Ingress Controller) реализованного на nginx:
+minikube addons enable ingress
+# Вывод:
+▪ Используется образ k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
+▪ Используется образ k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1
+▪ Используется образ k8s.gcr.io/ingress-nginx/controller:v1.1.0
+Verifying ingress addon...
+The 'ingress' addon is enabled
+# Список доступных пространств имён. Видим новосозданное новое пространство имен:
+kubectl get ns
+NAME                   STATUS   AGE
+default                Active   3d
+ingress-nginx          Active   11m
+kube-node-lease        Active   3d
+kube-public            Active   3d
+kube-system            Active   3d
+kubernetes-dashboard   Active   3d
+# Выводим список POD-ов в пространстве имен ingress-nginx, что бы удостовериться, 
+# что "входящий контроллер" запущен и работает:
+kubectl get pod -n ingress-nginx
+
+# Создание "входящих правил" для kubernetes-dashboard:
+kubectl apply -f dashboard-ingress.yaml
+ingress.networking.k8s.io/dashboard-ingress created
+# Вывод входящих контроллеров (Ingress) в пространстве имен kubernetes-dashboard:
+kubectl get ingress -n kubernetes-dashboard
+NAME                CLASS   HOSTS             ADDRESS     PORTS   AGE
+dashboard-ingress   nginx   dashboard.local   localhost   80      3m15s
+# Что бы определить что за адрес localhost для minikube (нашего кластера), выполним комманду:
+minikube ip
+192.168.49.2
+# Данный IP адрес вносим в файл /etc/hosts для сопоставления URL dashboard.local с localhost кластера:
+192.168.49.2       dashboard.local
+# Теперь введя в браузере URL dashboard.local - откроется панель Kubernetes Dashboard.
+
+
+# Разделы Кубернейтс (Kubernetes Volumes) бывают трёх типов:
+#       - Постоянный раздел (Persistent Volume, PV)
+#               ресурс кластера, создается с помощью YAML файла:
+#                  kind: PersistentVolume
+#                  metadata:
+#                     name: pv-name
+#                  spec:
+#                     capacity:
+#                          storage: 5Gi
+#                          lumeMode: Filesystem
+#                     accessMode:
+#                        - ReadWriteOnce
+#                     persistentVolumeReclaimPolicy: Recycle
+#                     storageClassName: slow
+#                     mountOptions:
+#                       - hard
+#                       - nfsvers=4.0
+#                     nfs:
+#                       path: /dir/path/on/nfs/server/
+#                       server: <nfs-server-ip-address>
+#               Где физически расположен раздел (на локальном диске, на NFS сервере или в облаке), его
+#               состояние, обслуживание и резервное копирование зависит от используемого модуля/плагина
+#               хранилища. Доступны для всего кластера, не относятся ни к одному пространству имен.
+#               Рекомендуется всегда использовать удаленное хранилище (NFS, Cloud) для хранения БД.
+#       - Постоянный раздел по требованию (Persistent Volume Claim, PVC)
+#               Настраивается в YAML файле, где приложение заявляет о необходимости использования хранилища
+#               (Persistent Volume Claim) с определенными характеристиками:
+#                       apiVersion: v1
+#                       kind: PersistentVolumeClaim
+#                       metadata:
+#                          name: pvc-name
+#                       spec:
+#                          storageClassName: manual
+#                          volumeMode: Filesystem
+#                          accessModes:
+#                             - ReadWriteOnce
+#                          resources:
+#                             requests:
+#                               storage: 10Gi
+#       - Класс хранилища (Storage Class, SC)

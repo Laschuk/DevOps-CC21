@@ -1,0 +1,5 @@
+FROM mysql:5.7.36
+LABEL maintainer="fomindn@gmail.com"
+LABEL version="5.7.36"
+LABEL description="This MySQL v.5.7.36 docker image is created \
+for the DevOps CI/CD study reason."

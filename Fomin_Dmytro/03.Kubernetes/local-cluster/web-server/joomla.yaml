@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+# What will be doing? Deployment
+kind: Deployment
+metadata:
+  # The name of deployment
+  name: joomla
+  labels:
+    app: joomla
+# Specification for deployment
+spec:
+  # How many REPLICAS of the PODS will be creating
+  replicas: 1
+  selector:
+    matchLabels:
+      app: joomla
+  ### Blueprint for the POD
+  template:
+    metadata:
+      labels:
+        app: joomla
+    # Specification for a pod
+    spec:
+      hostname: joomla
+      containers:
+      - name: joomla
+        image: fomindn/joomla:4.0.5
+        ports:
+          - containerPort: 80
+        env:
+        - name: JOOMLA_DB_HOST
+          valueFrom:
+            # Подключаем внешний файл карту настроек (mysql-configmap.yaml)
+            configMapKeyRef:
+              name: mysql-configmap
+              key: database_url
+        - name: JOOMLA_DB_NAME
+          valueFrom:
+            # Подключаем внешний файл-секрет (mysql-secret.yaml)
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-db-name
+        - name: JOOMLA_DB_USER
+          valueFrom:
+            # Подключаем внешний файл-секрет (mysql-secret.yaml)
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-user-name
+        - name: JOOMLA_DB_PASSWORD
+          valueFrom:
+            # Подключаем внешний файл-секрет (mysql-secret.yaml)
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-user-pass
+        volumeMounts:
+        - name: local-storage
+          mountPath: /var/www/html
+          subPath: joomla
+      volumes:
+      - name: local-storage
+        persistentVolumeClaim:
+          claimName: local-volume-claim
+
+---
+# Блок описания сервиса (service)
+apiVersion: v1
+kind: Service
+metadata:
+  name: joomla-service
+spec:
+  selector:
+    app: joomla
+  # тип "балансировщик загрузки" (LoadBalancer) обозначает, что данный 
+  # сервис открывается для публичного доступа по IP адресу и порту (nodePort)
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      # порт сервиса в кластере по которому другие сервисы (приложения) 
+      # кластера осуществляют подключение к данному серверу (сервису)
+      port: 80
+      # Порт контейнера по которому приложение внутри контейнера 
+      # принимает запросы из вне
+      targetPort: 80
+      # Порт ноды, доступный из вне кластера и через который осуществляется 
+      # подключение к данному сервису (приложению) с локального компьютера
+      nodePort: 30000
