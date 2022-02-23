@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.1 (a9d05d509)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: wordpress
+  name: wordpress
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: wordpress
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.1 (a9d05d509)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: wordpress
+    spec:
+      containers:
+        - env:
+            - name: WORDPRESS_DB_HOST
+              valueFrom: 
+                secretKeyRef:
+                  name: wordpress-secret
+                  key: mysql-host
+            - name: WORDPRESS_DB_NAME
+              valueFrom: 
+                secretKeyRef:
+                  name: wordpress-secret
+                  key: mysql-db
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: wordpress-secret
+                  key: mysql-password
+            - name: WORDPRESS_DB_USER
+              valueFrom: 
+                secretKeyRef:
+                  name: wordpress-secret
+                  key: mysql-username
+          image: vladsanyuk/ssdevopscc:custom-wordpress
+          name: vlad-sanyuk-wordpress
+          ports:
+            - containerPort: 80
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.1 (a9d05d509)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: wordpress
+  name: wordpress
+spec:
+  ports:
+    - name: "8000"
+      port: 8000
+      targetPort: 80
+  type: LoadBalancer
+  selector:
+    io.kompose.service: wordpress
+status:
+  loadBalancer: {}
