@@ -1,0 +1,28 @@
+pipeline {
+  environment {
+    datadog_apiKey = credentials('monitoring')
+    AWS_CREDENTIALS = credentials('aws')
+  }
+
+  agent any
+
+  stages {
+    stage('Helm add & update Datadog repo') {
+      
+      steps {
+            sh 'helm repo add datadog https://helm.datadoghq.com'
+            sh 'helm repo update'
+
+      }
+    }
+    stage('Helm deploy Datadog') {
+      steps {
+          withCredentials([file(credentialsId: 'kubernetes', variable: 'KUBECONFIG')]) {
+                sh '''
+                    helm install datadog -f datadog-values.yaml --set datadog.site='datadoghq.com' --set datadog.apiKey=${datadog_apiKey} datadog/datadog
+                '''
+        }
+      }
+    }
+  }
+}

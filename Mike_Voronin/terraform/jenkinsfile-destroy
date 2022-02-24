@@ -1,0 +1,41 @@
+pipeline {
+agent any
+    
+    tools {
+        terraform 'terraform'
+    }
+
+    stages {
+        stage('Hello') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/MikeVoronin/terraform']]])
+            }
+        }
+        
+        stage ('Terraform init') {
+            steps { 
+                withAWS(credentials:'aws') {
+                sh ('terraform init')
+            }
+        }
+        }
+        
+        stage ('terraform plan') {
+            steps {
+               withAWS(credentials:'aws') {
+                      sh 'terraform plan' 
+                }
+            }
+        }
+        
+        stage ("terraform Action") {
+            steps {
+                withAWS(credentials:'aws') {
+//                echo "Terraform action is --> ${action}"
+                sh 'terraform destroy --auto-approve'
+                }
+            }
+        }
+
+    }
+}

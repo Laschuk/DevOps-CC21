@@ -1,0 +1,19 @@
+pipeline {
+    environment {
+         AWS_CREDENTIALS = credentials('aws')
+      }
+    
+
+agent any
+
+    stages{
+        stage('Deploy App') {
+        steps {
+            withCredentials([file(credentialsId: 'kubernetes', variable: 'KUBECONFIG')]) {
+                sh 'kubectl apply -f .'
+            }
+        }
+        }
+    }
+}
+
