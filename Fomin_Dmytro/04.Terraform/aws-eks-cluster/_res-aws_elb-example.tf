@@ -4,7 +4,7 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/elb
 
 # # Create a new load balancer
-# resource "aws_elb" "bar" {
+# resource "aws_elb" "example" {
 #   name               = "terraform-asg-example"
 #   security_groups    = [aws_security_group.elb.id]
 #   availability_zones = data.aws_availability_zones.all.names

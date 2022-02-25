@@ -3,7 +3,7 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy
 
 resource "aws_iam_policy" "eks_cluster_autoscaler" {
-  name = "eks-cluster-autoscaler"
+  name = "${local.cluster-name}-autoscaler"
 
   policy = jsonencode({
     Statement = [{

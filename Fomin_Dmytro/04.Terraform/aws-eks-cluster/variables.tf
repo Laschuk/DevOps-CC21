@@ -90,3 +90,15 @@ variable "public-nodes-instance-type" {
   type        = string
   description = "Worker Node EC2 instance type"
 }
+
+variable "s3-bucket-name" {
+  description = "The name of S3 Bucket"
+  type        = string
+  default     = "store-tfstate"
+}
+
+variable "dynamodb-table" {
+  description = "The name of the table (this needs to be unique within a region)."
+  type        = string
+  default     = "tfstate-lock"
+}

@@ -20,7 +20,7 @@
 # Create IAM role for EKS Node Group
 resource "aws_iam_role" "nodes" {
   # The name of the role
-  name = "eks-node-group-nodes"
+  name = "${local.cluster-name}-node-group-nodes"
 
   # The policy that grants an entity permission to assume the role.
   # Here uses Terraform's built-in function of the JSON encoder to 
@@ -51,4 +51,5 @@ resource "aws_iam_role" "nodes" {
   #   ]
   # }
   # POLICY
+
 }

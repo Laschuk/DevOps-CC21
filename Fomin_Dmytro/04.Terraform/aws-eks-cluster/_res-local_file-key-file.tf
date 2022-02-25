@@ -8,12 +8,12 @@
 #
 # https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
 
-//Saving Private Key PEM File
-resource "local_file" "key-file" {
-  content_base64 = tls_private_key.tls_key.private_key_pem
-  filename       = "eks-key.pem"
+# //Saving Private Key PEM File
+# resource "local_file" "key-file" {
+#   content_base64 = tls_private_key.tls_key.private_key_pem
+#   filename       = "eks-key.pem"
 
-  depends_on = [
-    tls_private_key.tls_key
-  ]
-}
+#   depends_on = [
+#     tls_private_key.tls_key
+#   ]
+# }

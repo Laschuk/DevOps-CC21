@@ -11,8 +11,8 @@
 #
 # https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key
 
-//Creating Key
-resource "tls_private_key" "tls_key" {
-  algorithm = "RSA"
-  rsa_bits  = 2048
-}
+# //Creating Key
+# resource "tls_private_key" "tls_key" {
+#   algorithm = "RSA"
+#   rsa_bits  = 2048
+# }

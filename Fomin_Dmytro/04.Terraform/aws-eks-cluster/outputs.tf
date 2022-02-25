@@ -9,7 +9,6 @@
 #
 # https://www.terraform.io/language/values/outputs
 
-# AWS EKS Cluster ID
 output "cluster_id" {
   description = "The AWS EKS cluster ID"
   value       = aws_eks_cluster.cluster.id
@@ -25,19 +24,21 @@ output "region" {
   value       = var.aws_region
 }
 
-# AWS VPC ID
 output "vpc_id" {
+  description = "AWS VPC ID"
   value       = aws_vpc.virt_lan.id
-  description = "VPC ID."
 
   # Setting an output value as sensative prevents 
   # Terraform from showing its value in plan and apply.
   sensitive = false
 }
 
-# Created role for the Kubernetes service account
 output "eks_cluster_autoscaler_arn" {
-  value = aws_iam_role.eks_cluster_autoscaler.arn
+  description = "Created role for the Kubernetes service account"
+  value       = aws_iam_role.eks_cluster_autoscaler.arn
 }
 
-
+# output "clb_dns_name" {
+#   description = "The domain name of the load balancer"
+#   value       = aws_elb.example.dns_name
+# }

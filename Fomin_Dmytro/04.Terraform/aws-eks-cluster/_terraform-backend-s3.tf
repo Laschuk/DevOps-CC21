@@ -7,12 +7,15 @@
 # key names that include the values of the bucket and key variables.
 
 
-# Terraform backend. s3 bucket with dynamodb 
-terraform {
-  backend "s3" {
-    bucket  = "cluster-tfstate-bucket"
-    encrypt = true
-    key     = "terraform.tfstate"
-    region  = "eu-central-1"
-  }
-}
+# # Terraform backend. S3 bucket with dynamodb 
+# terraform {
+#   backend "s3" {
+#     profile        = "default"
+#     bucket         = "store-tfstate"
+#     encrypt        = true
+#     key            = "AWS/DevOps-cc-21/tf-state/terraform.tfstate"
+#     region         = "eu-central-1"
+#     kms_key_id     = "alias/s3-tfstate-key"
+#     dynamodb_table = "tfstate-lock"
+#   }
+# }
