@@ -1,0 +1,27 @@
+.grey{
+  background: #292929;
+}
+
+.light-grey {
+  background: #bbbbbb;
+}
+
+.deep-grey {
+  background: #a8a8a8;
+}
+
+.green{
+  background: #31AB29;
+}
+
+.blue{
+  background: #2C6AA0;
+}
+
+.type{
+  font-family: Rubik;
+}
+
+.underline-on-hover:hover {
+  text-decoration: underline;
+}

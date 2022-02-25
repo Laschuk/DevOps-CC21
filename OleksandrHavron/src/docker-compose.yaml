@@ -1,0 +1,55 @@
+version: "3.3"
+
+services:
+  postgres:
+    # get postgres image
+    image: postgres:alpine
+    container_name: postgres
+    # set environment variables from file
+    env_file:
+      - ./etc/.env.local 
+    # set volume for postgers database
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:5.0
+    container_name: mongo
+    env_file:
+      - ./etc/.env.local 
+    volumes:
+      - mongo_db:/data/db
+
+  api:
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    image: hnom/codearena-api:latest
+    container_name: api
+    volumes:
+      - ./codeArena:/usr/src/api
+    env_file:
+      - ./etc/.env.local 
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - mongo
+
+  ui:
+    build:
+      context: .
+      dockerfile: ui.Dockerfile
+    image: hnom/codearena-ui:latest
+    container_name: ui
+    volumes:
+      - ./front-end:/usr/src/front-end
+      - /usr/src/front-end/node-modules
+    ports:
+      - 80:8080
+    depends_on:
+      - api
+
+volumes:
+  postgres_db:
+  mongo_db:
